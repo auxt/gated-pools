@@ -1,0 +1,25 @@
+\section{Related work}
+\label{sec:related}
+Loss-versus-rebalancing was defined by Milionis et al.\ \cite{lvr}, who also derived arbitrage profits with fees under Poisson block times \cite{lvrfees}; Nezlobin and Tassy \cite{nt} derived LVR under fixed block times with the ladder-height constant of Siegmund \cite{siegmund} and Broadie, Glasserman and Kou \cite{bgk}. Proposition~\ref{prop:pub} adds the arbitrageur's execution cost, which turns out to dominate, and derives the result from a stationarity identity that also gives turnover. Evans \cite{evans} characterised LP returns in geometric-mean markets, and the excess growth rate is Fernholz's \cite{fernholz}. Band rebalancing under proportional costs goes back to Magill and Constantinides \cite{magill} and Davis and Norman \cite{davisnorman}. Among designs, CoW AMM \cite{cowamm} already routes rebalancing to competing solvers through batch auctions; a gated pool adds a chosen drift band for multi-token baskets, fills bounded on-chain at oracle price $\pm s$ and an oracle-anchored retail quote. The auction-managed AMM \cite{amamm} sells the right to the arbitrage flow; Angstrom \cite{angstrom} recaptures it through an off-chain network; QuantAMM \cite{quantamm} moves weights over time but still rebalances through arbitrageurs.
+
+\section{Limitations}
+\label{sec:limits}
+\begin{itemize}
+\item \textbf{No market data.} Volatilities, correlations, jump rates and costs are stylised. Every result is a statement about the model; the formulas make it easy to re-evaluate with measured inputs.
+\item \textbf{Arbitrage cost $c$ is the pivot.} The thesis is strongest when $c$ is a few basis points or more and weakest when arbitrage is frictionless on sub-second blocks. $c$ should be measured per token from realised arbitrage trades, including gas and hedge slippage.
+\item \textbf{Solver spreads are assumed, not observed.} The bound $s\le s_{\max}$ is enforced on-chain, but where in that range competition settles must be measured with real solvers on realistic fills.
+\item \textbf{The basket formula is a heuristic} that overstates public-pool losses by up to 15\% at very low fees and costs.
+\item \textbf{Oracle behaviour in fast markets} (staleness, disagreement, jumps between updates) sets the quote layer's leak and must be measured per feed.
+\item \textbf{Retail volume and informed share are unknown} for a new venue; the main result does not depend on them, but the retail results of Section~\ref{sec:retail} do.
+\item \textbf{Not modelled:} gas as a fixed cost per fill, smart-contract risk, governance, legal form, and strategic behaviour by solvers beyond the spread they charge.
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:concl}
+A weighted pool rebalances whenever its price leaves a band of width fee plus arbitrage cost, and pays that cost plus a block-time overshoot on every dollar: $\Lpub=\gamma^{*}(c+\rho)/(f+c+\rho)$. The formula matches simulation to within 1.4\% for two assets and 3\% for a basket at fees of 30\bps\ or more, and it explains why fees alone cannot protect an index pool: the only lever is a fee high enough to drive away the retail flow that pays LPs. A gated pool removes the coupling. It rebalances at a drift band it chooses, through bonded solvers whose fills are bounded on-chain, and serves retail from a quote anchored to an oracle. For the core basket this cuts the cost of holding target weights from 2.53\% to 0.10\% of TVL a year at 12-second blocks and 10\bps\ costs, and the advantage survives every stress we applied except nearly free arbitrage on blocks of 2 seconds or less combined with solvers that charge more than 14--30\bps. What remains is empirical: measure $c$, solver spreads and oracle behaviour, and the formulas give the answer.
+
+\section*{Disclaimer}
+This paper is a draft for discussion. It describes a design that has not been built or audited, and every parameter is a proposal. Results come from models and simulations under stated assumptions; they are not forecasts. Nothing here is financial, investment, legal or tax advice, or an offer to buy any asset.
+
+\section*{Declaration of AI assistance}
+This paper was prepared with substantial assistance from a large language model, Claude by Anthropic \cite{claude}, used through the Claude application (Cowork mode) in October 2026; the model identifiers reported by the application were \texttt{claude-opus-5-5} and \texttt{claude-fable-5-1}. The author conceived the research questions and the design, set the scope of each analysis, and reviewed and edited every section. The model derived the formulas of Appendix~\ref{app:deriv}, wrote and ran the simulation code of Appendix~\ref{app:sim}, drafted the text, produced the figures and typeset the document. The author checked the claims, numbers and references and takes full responsibility for the content.

@@ -1,0 +1,48 @@
+\section{Worked examples}
+\label{app:ex}
+
+Each example recomputes a number used in the text from the formulas of Appendix~\ref{app:deriv}. A year has $3.1536\times10^{7}$ seconds; 1\bps\ $=10^{-4}$.
+
+\paragraph{B1. Excess growth rates.} \emph{ETH/USDC:} $\gamma^{*}=\tfrac12\cdot0.5\cdot0.5\cdot0.65^2=0.125\times0.4225=0.0528$, or 5.28\% a year. \emph{Core basket:} the weighted mean variance is
+\[
+\begin{aligned}\textstyle\sum_iw_i\sigma_i^2&=0.30(0.25)+0.25(0.4225)+0.15(0.64)\\&\quad+0.10(1.00)+0.05(0.64)=0.4086 .\end{aligned}
+\]
+The basket variance $w^{\top}\Sigma w$ has a diagonal part $\sum_iw_i^2\sigma_i^2=0.0749$ and a cross part $\sum_{i\ne j}w_iw_j\rho_{ij}\sigma_i\sigma_j=0.1641$ (the BTC--ETH pair alone contributes $2\cdot0.30\cdot0.25\cdot0.80\cdot0.50\cdot0.65=0.0390$), so $w^{\top}\Sigma w=0.2390$ and the basket's volatility is $\sqrt{0.2390}=48.9\%$. Then $\gamma^{*}=\tfrac12(0.4086-0.2390)=0.0848$, or 8.48\%.
+
+\paragraph{B2. Overshoot.} For 12-second blocks $\sqrt{\Delta t}=\sqrt{12/3.1536\times10^{7}}=6.169\times10^{-4}$. For ETH, $\sigma\sqrt{\Delta t}=4.01$\bps\ and $\rho=0.5826\times4.01=2.34$\bps; with 2-second blocks 0.95\bps, with 0.4-second blocks 0.43\bps. For the core basket, $\gamma_i=\tfrac12w_i(1-w_i)\sigma_i^2$ is 0.0263, 0.0396, 0.0408, 0.0450 and 0.0152 for BTC, ETH, SOL, HYPE and LINK (sum 0.1669), so
+\[
+\begin{aligned}\sigma_{\mathrm{eff}}&=\big[0.0263(0.5)+0.0396(0.65)+0.0408(0.8)\\&\quad+0.0450(1.0)+0.0152(0.8)\big]/0.1669=0.771,\end{aligned}
+\]
+and $\bar\rho=0.5826\times0.771\times6.169\times10^{-4}=2.77$\bps\ (1.13\bps\ at 2\,s, 0.51\bps\ at 0.4\,s).
+
+\paragraph{B3. Band.} At $f=30$\bps\ and $c=10$\bps: $h_+=\ln(1.001/0.997)=40.04$\bps\ and $h_-=-\ln(0.997\times0.999)=40.05$\bps, so $h=40.05$\bps, against $f+c+f^2/2=40.045$\bps.
+
+\paragraph{B4. Public ETH/USDC pool.} $f=30$, $c=10$\bps, 12\,s: $h+\rho=40.05+2.34=42.38$\bps. Turnover $\Tpub=0.0528/0.004238=12.46\times$ TVL a year. Loss $\Lpub=0.0528\times12.34/42.38=1.537\%$, of which hedging $0.0528\times10/42.38=1.246\%$ and rent $0.291\%$. Simulation: $12.48\times$ and 1.539\%. The weight band is $\delta_{\mathrm{eq}}=0.25\times42.38=10.6$\bps\ of weight.
+
+\paragraph{B5. Public core-basket pool.} Same parameters: $h+\bar\rho=42.82$\bps, $\Tpub=0.0848/0.004282=19.81$, $\Lpub=0.0848\times12.77/42.82=2.530\%$ (hedging 1.981\%, rent 0.549\%). Simulation: 19.81 and 2.526\%. With blocks infinitely fast the loss falls only to $0.0848\times10/40.05=2.12\%$ (ETH/USDC: 1.32\%).
+
+\paragraph{B6. Zero arbitrage cost.} ETH/USDC at 30\bps\ and 12\,s with $c=0$: $h=-\ln0.997=30.05$\bps\ and $\Lpub=0.0528\times2.34/32.39=0.381\%$; simulation 0.381\%. The Poisson-block formula \cite{lvrfees} gives $P_{\mathrm{trade}}=1/(1+f\sqrt{2/\Delta t}/\sigma)=1/(1+0.003\times2293/0.65)=0.0863$ and a loss of $0.0528\times0.0863=0.456\%$. With 0.4-second blocks Eq.~\eqref{eq:pub} gives $0.0528\times0.43/30.48=0.074\%$; simulation 0.074\%.
+
+\paragraph{B7. Gated pool.} ETH/USDC: $K=(0.25\times0.65)^2=0.0264$. At $\delta=2.5\%$, $\din=0$: $\Tgat=0.0264/0.025=1.056$, so a 10\bps\ spread costs 0.106\% a year; the vault rebalances about $1.056/0.025=42$ times a year, each time trading 2.5\% of NAV (\$250k in a \$10M vault). With $\din=\delta/2$: $0.0264/0.0375=0.704$, 0.070\% a year, 56 smaller fills. Core basket: $K=0.0260$, $\Tgat=1.04$, 0.104\% at $s=10$\bps\ and 0.312\% at the cap of 30\bps.
+
+\paragraph{B8. Tracking.} At $\delta=2.5\%$: $\E[x^2]=\delta^2/6=1.04\times10^{-4}$, so tracking noise is $0.65\times\sqrt{1.04\times10^{-4}}=0.66\%$ per $\sqrt{\text{year}}$ (simulation 0.69\%). The expected drag at $w=\tfrac12$ is $-\sigma^2\delta^2/12=-0.4225\times6.25\times10^{-4}/12=-0.002\%$ a year, a gain too small to matter.
+
+\paragraph{B9. Ratio, break-even and matching fee.} Core basket, 12\,s, $c=10$\bps, $f=30$\bps, $\delta=2.5\%$, $s=10$\bps. Turnover ratio $\gamma^{*}\delta/K(h+\bar\rho)=0.0848\times0.025/(0.0260\times0.004282)=19.0$; cost-per-dollar ratio $(c+\bar\rho)/s=12.77/10=1.28$; loss ratio $19.0\times1.28=24.3$. Break-even spread $s^{*}=\Lpub\,\delta/K=0.0253\times0.025/0.026=243$\bps. Matching public fee: $r=sK/\gamma^{*}\delta=0.001\times0.026/(0.0848\times0.025)=0.0123$, so to first order $f^{*}=12.77\times(1/0.0123-1)=1{,}028$\bps; solving Eq.~\eqref{eq:h} exactly for $h^{*}=12.77/0.0123-2.77=1{,}039$\bps\ gives $f^{*}=9.8\%$. With $c=0$ and 0.4-second blocks: $\Lpub=0.0848\times0.51/30.56=0.140\%$, ratio 1.35, $s^{*}=0.0014\times0.025/0.026=13.5$\bps.
+
+\paragraph{B10. Price impact.} \$10k of HYPE ($w_i=0.10$) bought with USDC ($w_n=0.15$) in a \$10M vault: Eq.~\eqref{eq:impact} gives $10^{-3}\times(6.67+10)=1.67\%$. On exact virtual reserves ($\hat x_n=\$1.5$M, $\hat x_i=\$1.0$M of HYPE) with a 30\bps\ fee, the buyer receives \$9{,}888 of HYPE for \$10{,}000: \$30 of fee and \$82 of impact.
+
+\paragraph{B11. Gaussian latency leak.} At $\sigma=80\%$ and a 2-second lag, $\sigma_L=0.8\sqrt{2/3.1536\times10^{7}}=2.0$\bps; a 30\bps\ fee is $15\sigma_L$ and A16 gives a leak of zero to any precision. A 10\bps\ fee with an effective lag of 8 seconds (2\,s lag plus a 6\,s selection window) has $\sigma_L=4.0$\bps, $f/\sigma_L=2.5$ and a leak of $1.7\times10^{-6}$ per dollar per window; at 0.1\% of TVL per 12-second window, $2.63\times10^{6}$ windows a year give 0.45\% of TVL a year. \emph{Jumps:} the jump model has about $26+5\times12=86$ jumps a year; each is worth at most $q$ times the jump net of fee and impact, about 3--4\% on average, so at $q=0.1\%$ the leak is about $86\times0.001\times0.035\approx0.3\%$ a year (simulation 0.26\%).
+
+\paragraph{B12. Informed flow.} With $k=f+\bar\imath=30+17=47$\bps\ (the average fee plus impact paid at $5\times$ volume, Section~\ref{sec:retail}) and a token at 75\% volatility, a trader who knows tomorrow's price faces $s=0.75\sqrt{1/365}=3.93\%$; $k/s=0.12$, so $m=3.44\%$ and $\varphi^{*}=0.47/3.44=14\%$. For next-hour information $s=0.80\%$, $k/s=0.59$, $m=0.97\%$ and $\varphi^{*}=49\%$.
+
+\paragraph{B13. Worst case for a solver.} $s_{\max}Q_{\max}=0.003\times0.20=0.06\%$ of NAV a day. Bond capacity: $\$100{,}000/(7\times0.003)=\$4.76$M of fills a day.
+
+\paragraph{B14. Drift of a basket of pairs.} Two constant-product pairs of equal value, one on a token that doubles and one on a token that stays flat: by A18 their values become $\sqrt2=1.414$ and 1, so the basket holds 58.6\% and 41.4\% instead of 50/50, a drift of 8.6\% that no trade inside either pair can correct.
+
+\paragraph{B15. Volatility scaling.} Scaling every $\sigma_i$ by 1.4 multiplies $\gamma^{*}$ and $K$ by $1.96$ and $\bar\rho$ by 1.4: $\gamma^{*}=0.1662$, $\bar\rho=3.88$\bps, so $\Lpub=0.1662\times13.88/43.93=5.25\%$ and $\Lgat=0.104\%\times1.96=0.204\%$. At 0.6: $\gamma^{*}=0.0305$, $\bar\rho=1.66$\bps, $\Lpub=0.0305\times11.66/41.71=0.854\%$ and $\Lgat=0.104\%\times0.36=0.037\%$.
+
+\paragraph{B16. Volatility regimes.} With average variance fixed, the low state scales volatility by $m_L=1/\sqrt{0.8+0.2\times4}=0.791$ and the high state by $2m_L=1.581$. In the low state $\gamma^{*}=0.0848\times0.625=0.0530$ and $\bar\rho=2.19$\bps, so the loss rate is $0.0530\times12.19/42.24=1.53\%$; in the high state $\gamma^{*}=0.2120$, $\bar\rho=4.38$\bps\ and $0.2120\times14.38/44.43=6.86\%$. Weighting by time, $0.8\times1.53+0.2\times6.86=2.60\%$ (simulation $2.57\pm0.05$). The gated cost is linear in variance, so its average is unchanged at 0.104\%.
+
+\paragraph{B17. Excess growth of jumps.} A market-wide jump moves token $i$ by $\beta_i\times4\%$ times a standard normal, with $\beta_i=\sigma_i/0.65$ (0.77, 1.00, 1.23, 1.54 and 1.23), 26 times a year; each token also jumps by 6\% times a standard normal 12 times a year. The jump covariance a year is therefore $J_{ij}=26(0.04\beta_i)(0.04\beta_j)+12(0.06)^2\mathbf 1_{i=j}$; for ETH $J_{ii}=0.0416+0.0432=0.0848$. Then $\sum_iw_iJ_{ii}=0.0770$, $w^{\top}Jw=0.0404$ and the jumps' own excess growth is $\tfrac12(0.0770-0.0404)=1.83\%$, which the public pool almost entirely pays: its loss rises by 1.57 points.
+
+\paragraph{B18. Gas per fill.} A gated vault rebalancing 42 times a year at \$5 to \$50 of gas per fill spends \$210 to \$2{,}100 a year: 0.002--0.021\% of a \$10M vault and 0.02--0.21\% of a \$1M vault, against a spread cost of 0.104\%.

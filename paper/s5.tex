@@ -1,0 +1,93 @@
+\section{Challenging the assumptions}
+\label{sec:challenge}
+
+The baseline makes favourable choices for one side or the other at almost every step. This section relaxes them one at a time. Table~\ref{tab:register} summarises the result; the subsections give the evidence. Unless stated, the core basket is used with $f=30$\bps, $c=s=10$\bps, $\delta=2.5\%$ and 12-second blocks, and every number is a loss in \% of TVL a year.
+
+\begin{table*}[t]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Assumption register. ``Public'' is a 30\bps\ public pool, ``gated'' a gated vault at $\delta=2.5\%$; losses in \% of TVL a year for the core basket unless stated.}
+\label{tab:register}
+\begin{tabular}{L{28mm}L{36mm}L{36mm}L{42mm}L{18mm}}
+\toprule
+Assumption & Why it may be wrong & Test & Result & Thesis\\
+\midrule
+Arbitrage costs $c=10$\bps & Top arbitrageurs may pay far less & $c$ from 0 to 20\bps, three block times (Fig.~\ref{fig:be}) & $s^{*}>s_{\max}$ for all $c\ge0.7$\bps; at 12\,s for every $c$ & Holds unless $c<1$\bps\ \emph{and} $\Delta t\le2$\,s\\
+Competitive solvers, $s=10$\bps & One solver, or collusion & $s$ at the 30\bps\ cap & Gated 0.31 against public 0.72--2.53 at 12\,s & Holds\\
+12-second blocks & Rollups and fast chains & 2\,s and 0.4\,s & Public falls to 2.29 and 2.20; the $c$ term remains & Holds if $c\ge0.7$\bps\\
+Volatility level & Crypto volatility varies & All $\sigma$ $\times0.6$ and $\times1.4$ & Public 0.85 and 5.23; gated 0.04 and 0.21 & Holds\\
+Constant volatility & Volatility clusters & 2$\times$ regime, 20\% of the time & Public 2.57; gated 0.10 & Holds\\
+Zero drift & Trends; mean reversion & Random trends; OU, $\kappa=2$ & Public unchanged; gated $\pm0.2$ & Holds\\
+Continuous prices & Jumps & Market and token jumps & Public 4.10; gated 0.12 & Strengthened\\
+Oracle equals true price & Lag; pull-oracle price selection & 2--6\,s lag, 6\,s selection, jumps & Quote leak 0.09--0.40; fill selection 1.3 unless timestamps are monotone & Holds with the rules of \S\ref{sec:oracle}\\
+Uninformed retail & Toxic flow & Analytic break-even & Positive while informed share $<14\%$ (daily) & Retail only\\
+Retail volume $5\times$ & Aggregators route to the cheapest quote & Zero retail & Main result needs none & Holds\\
+Basket formula & Cross-token coupling & Simulation & Within 3\% at $f\ge30$\bps; overstates public loss by up to 15\% at 5\bps\ and $c=0$ & Holds; gap smaller at low fees\\
+No fixed costs & Gas per fill & 42 fills a year & 0.002--0.02 at \$10M; up to 0.2 at \$1M & Holds above a few \$M\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Execution costs and solver competition}
+\label{sec:costs}
+
+The arbitrageur's cost $c$ is the pivot of the comparison, because it is the only part of the public pool's loss that faster blocks cannot remove and the part the gated pool also pays, as $s$. Figure~\ref{fig:be} plots the break-even spread $s^{*}$ of Proposition~\ref{prop:ratio} against $c$. Against a 30\bps\ public pool, $s^{*}$ exceeds the 30\bps\ cap for every $c\ge0.7$\bps\ at every block time tested, and for every $c$ at 12 seconds ($s^{*}=69$\bps\ at $c=0$). Against a 5\bps\ public pool, the usual tier for majors, $s^{*}$ is at least 73\bps\ everywhere, using the simulated loss where the formula is least accurate. The gated pool can therefore lose on rebalancing cost only if arbitrage is nearly free ($c<1$\bps) on blocks of 2 seconds or less \emph{and} its solvers charge more than 14--30\bps.
+
+\begin{figure}[t]
+\centering
+\input{fig_be}
+\caption{Break-even solver spread for the core basket at $\delta=2.5\%$: at spreads above a curve the public pool is cheaper. Heavy curves: 30\bps\ public pool; light curves: 5\bps; line style gives the block time.}
+\label{fig:be}
+\end{figure}
+
+We do not measure $c$. For it to fall below 1\bps, an arbitrageur would have to hedge without paying exchange fees or crossing a spread and without paying for gas, which describes makers with rebates or internalised flow rather than the marginal arbitrageur on most tokens. The solver's cost is at least the same hedge, and larger for larger fills: a gated rebalance trades 2.5\% of NAV at once (\$250k in a \$10M vault, \$25M in a \$1B one), so in a large vault $s$ includes market impact on the hedge venue. Trading back only to $\din=\delta/2$ halves the fill and cuts turnover by a third. With a single solver, or a colluding whitelist, the spread settles at the cap: the gated vault then costs 0.31\% against 0.72\% for a frictionless 30\bps\ public pool and 2.53\% at $c=10$\bps. The cap is enforced by the price-bound invariant, so collusion cannot raise it.
+
+\subsection{Block time}
+Faster blocks shrink only the rent term, as $\sqrt{\Delta t}$. At $c=10$\bps\ the public pool's loss falls from 2.53\% at 12 seconds to 2.29\% at 2 seconds and 2.20\% at 0.4 seconds; the floor as $\Delta t\to0$ is $\gamma^{*}c/(f+c)=2.12\%$ (Table~\ref{tab:theory}). Fast chains help public pools a great deal only where arbitrage is also nearly free.
+
+\subsection{Volatility level and regimes}
+Both laws scale with variance: $\gamma^{*}$ and $K$ are proportional to $\sigma^2$, while $\rho$ grows only with $\sigma$. Scaling every volatility by 0.6 and by 1.4 gives public losses of 0.854\% and 5.23\% (theory 0.854\% and 5.25\%) and gated losses of 0.038\% and 0.21\% (theory 0.037\% and 0.20\%): a ratio of 22--26 throughout. A two-state regime model, with volatility doubling for 20\% of the time and average variance unchanged, gives 2.57\% $\pm$ 0.05 for the public pool (theory 2.60\%, slightly above baseline because the rent grows with $\sigma^3$) and 0.10\% for the gated vault.
+
+\subsection{Drift: trends and mean reversion}
+\label{sec:drift}
+With zero drift the benchmark and buy-and-hold have the same expected value. We add random trends (a constant drift per token drawn from $N(0,0.6^2)$ a year) and mean reversion (an Ornstein--Uhlenbeck log price with $\kappa=2$ a year). The public pool's loss does not move (2.52\% and 2.53\%), because its band is too narrow for drift to matter. The gated vault lags its target inside the band, which makes it partly a buy-and-hold portfolio: under trends that earns 0.21\% a year against the benchmark, under mean reversion it costs 0.18\% (0.47\% and 0.37\% at $\din=\delta/2$), against an unchanged spread cost of 0.10\%. These are an order of magnitude smaller than the gap between designs. What does move is the benchmark itself: buy-and-hold beats it by 14.1\% a year under the trend model and trails it by 6.4\% under mean reversion. Holding a constant-weight basket is a bet on mean reversion; this paper only asks what the bet costs to place.
+
+\subsection{Jumps}
+With market-wide jumps (26 a year, 4\% standard deviation scaled by each token's volatility) and token-specific jumps (12 a year, 6\%), the public pool's loss rises from 2.53\% to 4.10\%. Jumps add their own excess growth, 1.83\% for this jump model, and a jump overshoots any fee band, so the public pool pays almost all of it. The gated vault's loss rises from 0.10\% to 0.12\%, because jumps add to the variance of drift and the vault pays only the spread on the extra turnover ($1.27\times$ TVL instead of $1.03\times$). Jumps strengthen the thesis, provided the oracle reflects them before anyone trades against the vault, which the next subsection examines.
+
+\subsection{Oracle latency and price selection}
+\label{sec:oracle}
+The baseline gives the gated pool a perfect oracle. We now let an informed trader see the true price while the quote layer is centred on an oracle that lags by one 2-second block, or three, and let him choose, as a pull oracle allows, the most favourable signed price from a window of three earlier blocks. He trades each token toward the true price up to a pool-wide budget of $q$ of TVL per 12 seconds (C4). Retail flow is $5\times$ TVL a year, the quote fee 30\bps\ and blocks 2 seconds; 40 paths of 60 days per scenario.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Oracle stress on the gated pool with the quote layer, with jumps: informed-trader leak and cost of rebalancing fills (spread plus any price wedge), \% of TVL a year. Without jumps every quote leak is below 0.001\% at a 30\bps\ fee. 2-second blocks, $5\times$ retail; 40 paths of 60 days. $^{\dagger}$Equal to the perfect oracle by construction.}
+\label{tab:oracle}
+\begin{tabular}{L{40mm}rr}
+\toprule
+Scenario & Leak & Fill loss\\
+\midrule
+Perfect oracle & 0 & 0.13\\
+Lag 2\,s, cap 0.1\%/12\,s & 0.26 & 0.13\\
+Lag 6\,s, cap 0.1\% & 0.35 & 0.13\\
+Lag 2\,s, 6\,s selection, cap 0.1\% & 0.40 & 0.13\\
+Lag 2\,s, 6\,s selection, cap 0.02\% & 0.09 & 0.13\\
+Selection also on rebalancing fills & 0.43 & 1.27\\
+Quote fee 10\bps, lag 2\,s, cap 0.1\% & 0.33 & 0.13\\
+Quote fee 10\bps, 6\,s selection, cap 0.1\% & 0.71 & 0.12\\
+Next-price execution$^{\dagger}$ & 0 & 0.13\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three results stand out (Table~\ref{tab:oracle}). First, Gaussian latency is harmless at a 30\bps\ fee: with smooth prices no scenario leaks more than 0.001\% a year, as A16 predicts ($f/\sigma_L=15$ at a 2-second lag). Second, \emph{jumps} are what an informed trader harvests: each jump that lands before the oracle is worth up to the per-window cap, so the leak is 0.26--0.40\% at a cap of 0.1\% and scales with the cap (0.09\% at 0.02\%). Third, and most important, price selection on \emph{rebalancing fills} is the largest oracle risk in the design. If a solver could pick, for each leg, any signed price from the last six seconds, a jump that pushes drift over the band would let him fill at the pre-jump price, and the vault's loss would rise from 0.12\% to 1.3\% $\pm$ 0.2 a year, still far below the public pool's 4.1\% with jumps but ten times the baseline. Without jumps the same selection adds only 0.05\%.
+
+The design therefore requires, and Table~\ref{tab:inv} now enforces: one price set per fill, used both for the trigger and for the price bound; timestamps no older than the newest the vault has already used; and $\tau_{\max}=2$ seconds. With monotone timestamps, the pre-jump price cannot be used once the post-jump price has been, and a fill needs the post-jump price to show drift above the band, so the residual exposure is a jump that lands while an auction is already open. On the quote layer, \emph{next-price execution} removes latency and selection edges entirely; without it the per-window cap bounds the leak, and the cap should be set from the jump rate of each token.
+
+\subsection{Informed retail flow}
+Retail pays the fee plus impact, $f+\bar\imath\approx47$\bps\ a dollar at $5\times$ volume. Traders who know the price change $r_H$ over a horizon $H$ trade only when it beats that. The quote layer's retail income stays positive while the informed share of volume is below $\varphi^{*}=(f+\bar\imath)/m$, where $m$ is the average absolute price change on the trades the informed actually make (A17): 49\% for information one hour ahead and 14\% for a day ahead on a 75\%-volatility token (B12). A public pool faces the same arithmetic with a smaller numerator, because it loses most of the impact to arbitrageurs, so informed flow is not a reason to prefer it. It is a reason to treat retail income as uncertain.
+
+\subsection{Retail volume and routing}
+Aggregators route each trade to the cheapest venue, so a basket pool with a 30\bps\ quote will win little flow in tokens that trade at 1--5\bps\ elsewhere. The main result needs no retail at all. Retail matters in two ways only: it adds income where it comes (Section~\ref{sec:retail}), and it is the reason a public pool cannot simply raise its fee. A gated pool can set its quote fee for flow rather than for protection, down to the floor set by oracle quality: at 10\bps\ the leak rises to 0.33\% a year with a 2-second lag and 0.71\% with selection (Table~\ref{tab:oracle}), which next-price execution would remove.
+
+\subsection{Fixed costs, pool size and the arbitrage model}
+A gated vault makes about 42 fills a year. At \$5--50 of gas per fill that is \$200--2{,}000 a year: 0.002--0.02\% of a \$10M vault but 0.02--0.2\% of a \$1M one, up to twice the spread cost, so the design suits vaults above a few million dollars, or chains with cheap gas. Public arbitrageurs pay gas per trade too, which raises their effective $c$ in small pools. Our arbitrage model assumes perfect competition at the margin; less competition means arbitrageurs wait for larger mispricings, which acts as a larger $c$ in Eq.~\eqref{eq:pub} and raises the public pool's loss. We model arbitrage token by token against USDC; multi-token arbitrage could shave the public pool's turnover somewhat, which is one reason the basket formula is labelled a heuristic.

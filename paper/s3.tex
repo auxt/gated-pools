@@ -1,0 +1,58 @@
+\section{The mechanism}
+\label{sec:mech}
+\begin{table*}[t]
+\centering\small
+\caption{On-chain invariants checked on every rebalancing fill.}
+\label{tab:inv}
+\begin{tabular}{L{22mm}L{56mm}L{44mm}L{30mm}}
+\toprule
+Rule & Check & Stops & Default\\
+\midrule
+Drift must fall & $D_{\mathrm{after}}\le D_{\mathrm{before}}-\Delta_{\min}$; no token overshoots its target by more than $\varepsilon$ & Fills that push the basket away from target & $\Delta_{\min}=0.25\%$ of NAV\\
+Price bound & Value in $\ge(1-s_{\max})\times$ value out, both at oracle prices & Overcharging & $s_{\max}=30$\bps\\
+Oracle freshness & One price set per fill, used for both trigger and price bound; age $\le\tau_{\max}$; timestamps not older than the newest the vault has used; feeds within $\theta$ & Fills at stale, selected or manipulated prices (Section~\ref{sec:oracle}) & $\tau_{\max}=2$\,s; $\theta=50$\bps\\
+Size caps & Fill $\le q_{\max}\times$NAV; daily total $\le Q_{\max}\times$NAV & Draining the vault & 5\% per fill, 20\% per day\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Section~\ref{sec:theory} says what a gated pool must do: move its inventory only when drift reaches a band that is chosen, not implied by a fee, and pay a competitive spread when it does. This section specifies a design that does that and bounds what each privileged party can take. Figure~\ref{fig:arch} shows one pool.
+
+\begin{figure}[t]
+\centering
+\input{fig_arch}
+\caption{One gated pool. Quotes follow the oracle every block through internal re-centring; inventory moves only when drift exceeds the band $\delta$, through bonded solvers at oracle price $\pm s$.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Vault, NAV and drift}
+A vault holds $x_i$ of each token. It values itself at oracle prices $p_i$ and measures its drift from target:
+\begin{equation}
+\NAV=\sum_i x_i p_i,\qquad \omega_i=\frac{x_i p_i}{\NAV},\qquad D=\tfrac12\sum_i\lvert\omega_i-w_i\rvert .
+\label{eq:drift}
+\end{equation}
+$D$ is the one-way notional, as a share of NAV, that restores target weights. LPs mint and redeem in kind: depositing a fraction $\alpha$ of every balance mints $\alpha$ of the share supply, and burning shares returns the same fraction of every balance. Neither path needs a price, so neither can be gamed through the oracle or paused.
+
+\subsection{The gate}
+\label{sec:gate}
+\paragraph{Trigger.} Every interaction recomputes $D$, and anyone may call a public check. When $D>\delta$ the vault opens a rebalancing intent listing the token deltas that move drift to $\din$.
+
+\paragraph{Reverse Dutch auction.} The spread a solver may keep starts at zero and rises with time, $s(t)=\min(s_{\max},\,\varrho\, t)$, with $\varrho$ = 1\bps\ per second. The first whitelisted solver whose cost is covered fills. With several solvers the fill lands near the cheapest solver's cost plus one step; with one solver it lands at $s_{\max}$, which Section~\ref{sec:costs} treats as the stress case. A solver's cost is the hedge, the same $c$ an arbitrageur pays on a public pool, plus inventory risk on a larger fill.
+
+\paragraph{On-chain invariants.} Every fill must pass four checks, whoever submits it (Table~\ref{tab:inv}). Together they bound the damage of a compromised or hostile solver to $s_{\max}Q_{\max}=0.3\%\times20\%=0.06\%$ of NAV a day, plus any oracle error (Appendix~\ref{app:ex}, B13).
+
+
+\paragraph{Bonds and fallback.} Solvers post USDC bonds sized to seven days of worst-case damage, so a \$100k bond allows $B/(7s_{\max})\approx\$4.76$M of fills a day. Bonds are slashed only on objective on-chain evidence. If no whitelisted solver fills within $T_{\mathrm{fb}}$ (one hour), the same auction opens to anyone who posts a bond, so the pool stays live without trusting any operator, and a colluding whitelist cannot charge more than outsiders would.
+
+\subsection{The quote layer}
+\label{sec:quote}
+Closing the inventory to arbitrage would also close it to retail. The quote layer reopens it without reopening arbitrage.
+
+\paragraph{Anchored curve.} At the start of each block the layer sets virtual reserves $\hat x_i=w_i\NAV/p_i$ centred on the oracle. A retail trade executes on these reserves with weighted-pool math and fee $f_q$, and the vault's real balances change by the same amounts; trades in one block move along the curve, and the next block starts again from the oracle. Re-centring is an internal transfer, so the quote stays fresh without the inventory trading. In a public pool the next arbitrageur reverses a retail trade's price impact and keeps it; here the impact stays with LPs, and the inventory change it causes is netted by later flow or rebalanced at the band. A small purchase of token $i$ with token $n$ moves the quote by
+\begin{equation}
+\Delta\ln P_i\approx\frac{A}{\NAV}\Big(\frac{1}{w_n}+\frac{1}{w_i}\Big),
+\label{eq:impact}
+\end{equation}
+so \$10k of HYPE (10\% weight) paid in USDC (15\%) in a \$10M vault moves it 1.67\% and pays \$30 of fee and \$82 of impact (B10). Because re-centring would let a large trader split an order across blocks, the anchor carries an \emph{inventory skew}: the centre for token $i$ is shifted against the side the vault is already short of, in proportion to $(w_i-\omega_i)/w_i$.
+
+\paragraph{What the quote layer cannot do.} It quotes at a price someone else measured, so it is exposed to anyone who knows the price better or sooner. Section~\ref{sec:oracle} quantifies this. The layer therefore enforces a freshness gate (no trades while the price is older than $\tau_{\max}$ or the feeds disagree), monotone oracle timestamps, a per-window size cap (default 0.1\% of TVL per 12 seconds), and a fee floor tied to realised volatility. The strongest option is \emph{next-price execution}: a trade is submitted in one block and filled at the first oracle price stamped after it, which removes latency and selection edges at the cost of a one-block delay.

@@ -1,0 +1,52 @@
+\section{Introduction}
+
+A basket of tokens held at fixed weights is the simplest on-chain index. The usual way to run one is a weighted pool, a geometric-mean market maker in the style of Balancer \cite{evans}: its invariant keeps every token near its target share of value, anyone may trade against it, and arbitrageurs do the rebalancing. LPs pay them for it. At zero fee the payment is the basket's excess growth rate $\gamma^{*}$, the multi-asset form of loss-versus-rebalancing (LVR) \cite{lvr}: 8.5\% of TVL a year for the six-token basket used in this paper.
+
+Fees reduce that payment. How much, and through which channel, decides whether a different design is worth building, and the literature answers it only in part: Milionis et al.\ \cite{lvrfees} for Poisson blocks and Nezlobin and Tassy \cite{nt} for fixed blocks, both with costless arbitrage. The case that matters in practice adds arbitrageurs who pay to hedge. This paper derives it, builds a design on it, and then tries to break both.
+
+\paragraph{Thesis.} A weighted pool is a band rebalancer whose band is set by its swap fee plus its arbitrageurs' costs: about 0.4\% of price, or 0.1\% of weight, at a 30\bps\ fee. Because the band is so narrow, the pool turns over 12--28 times its value a year and pays its arbitrageurs' hedging cost and block-time rent on every dollar. A \emph{gated pool} chooses its band independently of the fee. Bonded solvers rebalance it only when its weights have drifted 2.5\% from target, at oracle price plus a capped spread, so it turns over about once a year. Retail trades a separate quote anchored to an oracle. For the core basket at a 30\bps\ fee, 12-second blocks and 10\bps\ execution costs, rebalancing costs the public pool 2.53\% of TVL a year and the gated pool 0.10\%.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item A closed-form cost for public weighted pools with fee $f$, arbitrage cost $c$ and block time $\Delta t$ (Proposition~\ref{prop:pub}): $\Lpub=\gamma^{*}(c+\rho)/(f+c+\rho)$ with $\rho\approx0.583\,\sigma\sqrt{\Delta t}$. It adds the arbitrage cost to the fixed-block result of \cite{nt}, rests on a short stationarity identity, is exact to first order for two assets and within 1.4\% of simulation across 32 combinations of fee, cost and block time, and shows which part of the loss faster blocks cannot remove.
+\item The cost of gated band rebalancing, $sK/(\delta+\din)$, and the break-even solver spread (Propositions~\ref{prop:gate} and \ref{prop:ratio}).
+\item A mechanism that implements the gate with on-chain bounds on every privileged action (Section~\ref{sec:mech}).
+\item A stress test of each modelling assumption, with the conditions under which the thesis fails (Section~\ref{sec:challenge}).
+\item Step-by-step derivations (Appendix~\ref{app:deriv}), a worked example for every number in the paper (Appendix~\ref{app:ex}) and simulation methods (Appendix~\ref{app:sim}).
+\end{enumerate}
+
+\paragraph{What this paper does not claim.} It does not claim that a constant-weight basket beats buy-and-hold; that depends on whether relative prices mean-revert (Section~\ref{sec:drift}). It does not assume any level of retail volume for its main result. It compares ways of carrying out one mandate, holding a basket at target weights, on the same price paths. Parameters are stylised, not estimated from market data; Section~\ref{sec:limits} lists what must be measured before the numbers are trusted.
+
+\section{Model}
+\label{sec:model}
+
+\paragraph{Prices.} There are $n$ tokens; the last is USDC with price 1. Risky prices follow correlated geometric Brownian motion with volatilities $\sigma_i$ and correlations $\rho_{ij}$, and $\Sigma_{ij}=\rho_{ij}\sigma_i\sigma_j$. In the baseline prices have zero drift in USDC; Section~\ref{sec:challenge} adds trends, mean reversion, volatility regimes and jumps.
+
+\paragraph{Baskets.} \emph{ETH/USDC} at 50/50 with $\sigma=65\%$ is the two-asset case, where the theory is exact. The \emph{core basket} holds BTC, ETH, SOL, HYPE, LINK and USDC at 30/25/15/10/5/15\%, with volatilities 50/65/80/100/80\% and correlations 0.45--0.80 (Appendix~\ref{app:sim}). Both are stylised.
+
+\paragraph{Benchmark and loss.} The benchmark is the constant-weight portfolio (CRP) rebalanced at true prices every block for free. A design's \emph{loss} is the rate at which its log value falls behind the benchmark's, $L=-\E[\ln(V_T/V_{\mathrm{CRP},T})]/T$, in \% of TVL a year. \emph{Turnover} $T$ is one-way notional traded per year as a multiple of TVL.
+
+\paragraph{Designs.} A \emph{public pool} is a weighted pool with fee $f$, open to anyone. Arbitrageurs see the true price each block, hedge on an external venue at cost $c$ per dollar (fees, spread, gas, inventory risk) and compete, so each token is traded against USDC at the first block where that is profitable, up to the edge where it stops being so. A \emph{gated vault} moves its inventory only through the gate of Section~\ref{sec:gate}: when drift reaches $\delta$, a solver trades it back to drift $\din$ at the oracle price and keeps spread $s$. A \emph{gated pool} adds the oracle-anchored quote layer of Section~\ref{sec:quote} for retail. Table~\ref{tab:notation} lists the notation, baseline values and the ranges tested.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{2.6pt}
+\caption{Notation, baseline values and ranges tested.}
+\label{tab:notation}
+\begin{tabular}{L{8mm}L{33mm}L{15mm}L{18mm}}
+\toprule
+& Meaning & Baseline & Tested\\
+\midrule
+$\gamma^{*}$ & Excess growth rate, Eq.~\eqref{eq:gamma} & 8.48\% (core) & 5.28\% (ETH)\\
+$f$ & Swap fee & 30\bps & 1--100\bps\ (core 5--100)\\
+$c$ & Arbitrageur's cost per \$ & 10\bps & 0--20\bps\\
+$\Delta t$ & Block time & 12\,s & 0.4--12\,s\\
+$h$ & Band half-width, Eq.~\eqref{eq:h} & $\approx f+c$ & \\
+$\rho$ & Overshoot, $\beta\sigma\sqrt{\Delta t}$ & 2.77\bps & 0.4--2.8\bps\\
+$\delta$ & Drift band & 2.5\% & 0.5--5\%\\
+$\din$ & Drift after a rebalance & 0 & 0, $\delta/2$\\
+$s$ & Solver spread & 10\bps & 10--30\bps\\
+$K$ & Variance rate of drift & 0.0260 & computed\\
+$\sigma$ & Volatilities & 50--100\% & $\times0.6$--$\times1.4$\\
+\bottomrule
+\end{tabular}
+\end{table}

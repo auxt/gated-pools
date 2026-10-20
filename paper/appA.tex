@@ -1,0 +1,128 @@
+\appendix
+\section{Derivations}
+\label{app:deriv}
+
+Notation follows Table~\ref{tab:notation}. Token $n$ is USDC with $p_n\equiv1$ and $\Sigma_{nj}=0$. Prices satisfy $dp_i/p_i=\mu_i\,dt+\sigma_i\,dW_i$ with $d\langle W_i,W_j\rangle=\rho_{ij}dt$; the baseline has $\mu_i=0$. Approximations are first order in $f$, $c$, $h$ and $\delta$ unless stated.
+
+\paragraph{A1. Growth of a constant-weight portfolio.} A portfolio with weights $\omega$ has $dV/V=\sum_i\omega_i\,dp_i/p_i$, so $(dV/V)^2=\omega^{\top}\Sigma\omega\,dt$. It\^o's lemma for $\ln V$ gives
+\begin{equation}
+d\ln V=\sum_i\omega_i\frac{dp_i}{p_i}-\tfrac12\,\omega^{\top}\Sigma\omega\,dt .
+\end{equation}
+For each token, $d\ln p_i=dp_i/p_i-\tfrac12\sigma_i^2dt$, so $dp_i/p_i=d\ln p_i+\tfrac12\sigma_i^2dt$. Substituting with $\omega=w$:
+\begin{equation}
+d\ln V_{\mathrm{CRP}}=\sum_i w_i\,d\ln p_i+\underbrace{\tfrac12\Big(\sum_i w_i\sigma_i^2-w^{\top}\Sigma w\Big)}_{\gamma^{*}}dt .
+\end{equation}
+$\gamma^{*}\ge0$ by Jensen's inequality, since $\sum_iw_i\sigma_i^2$ is the weighted mean of the variances and $w^{\top}\Sigma w$ the variance of the weighted mean.
+
+\paragraph{A2. A frictionless weighted pool tracks the geometric index.} The invariant is $\prod_ix_i^{w_i}=k$. With zero fee and continuous arbitrage the pool's marginal prices equal market prices, which for a weighted pool means $x_ip_i=w_iV$ for every $i$. Substituting $x_i=w_iV/p_i$:
+\begin{equation}
+\begin{aligned}
+k&=\prod_i\Big(\frac{w_iV}{p_i}\Big)^{w_i}=V\prod_i\Big(\frac{w_i}{p_i}\Big)^{w_i}\\
+\Rightarrow\;\ln V&=\ln k+\sum_iw_i\ln\frac{p_i}{w_i},
+\end{aligned}
+\end{equation}
+since $\sum_iw_i=1$. Hence $d\ln V_{\mathrm{pool}}=\sum_iw_i\,d\ln p_i$, and by A1, $d\ln(V_{\mathrm{pool}}/V_{\mathrm{CRP}})=-\gamma^{*}dt$. This proves Proposition~\ref{prop:gamma}. With driftless prices $\E[V_{\mathrm{CRP}}(t)]=V_0$, while $\ln V_{\mathrm{pool}}$ has drift $-\tfrac12\sum_iw_i\sigma_i^2$ and variance rate $w^{\top}\Sigma w$, so $\E[V_{\mathrm{pool}}(t)]=V_0e^{-\gamma^{*}t}$.
+
+\paragraph{A3. Two assets.} With one risky token at weight $w$ and USDC at $1-w$: $\sum_iw_i\sigma_i^2=w\sigma^2$ and $w^{\top}\Sigma w=w^2\sigma^2$, so $\gamma^{*}=\tfrac12w(1-w)\sigma^2$, and $\sigma^2/8$ at $w=\tfrac12$.
+
+\paragraph{A4. Reserves against price, and the notional density.} Write $P=\frac{x_n/(1-w)}{x_i/w}$ for the pool's marginal price of token $i$ in USDC. From $x_n=Px_i(1-w)/w$ and $x_i^{w}x_n^{1-w}=k$,
+\begin{equation}
+x_i^{w}\Big(Px_i\tfrac{1-w}{w}\Big)^{1-w}=k\;\Rightarrow\;x_i=k\Big(\frac{w}{(1-w)P}\Big)^{1-w},
+\end{equation}
+so $d\ln x_i=-(1-w)\,d\ln P$ and $d\ln x_n=w\,d\ln P$. A trade that moves the log price by $dz$ exchanges $p\,|dx_i|=(1-w)\,x_ip\,|dz|=w(1-w)V|dz|$ dollars, using $x_ip=wV$ near the market. We call $\nu=w(1-w)V$ the \emph{notional density}: dollars traded per unit of log-price movement.
+
+\paragraph{A5. The band.} Let $z=\ln P-\ln p$ be the pool's mispricing. The pool's ask, fee included, is $P/(1-f)$ and its bid $P(1-f)$. An arbitrageur can sell token $i$ elsewhere for $p(1-c)$ and buy it for $p(1+c)$. Buying from the pool is profitable when $P/(1-f)<p(1-c)$, that is $z<\ln(1-f)+\ln(1-c)\equiv-h_-$; selling to it when $P(1-f)>p(1+c)$, that is $z>\ln(1+c)-\ln(1-f)\equiv h_+$. The half-width is
+\begin{equation}
+\begin{aligned}
+h&=\tfrac12(h_++h_-)=\tfrac12\ln\frac{1+c}{1-c}-\ln(1-f)\\
+&=f+c+\tfrac12f^2+O(f^3,c^3).
+\end{aligned}
+\end{equation}
+Competition makes him trade at the first block where $z$ is outside $[-h_-,h_+]$, and only up to the edge, where his marginal profit is zero.
+
+\paragraph{A6. Loss per trade.} Suppose a block finds $z=-h_--R$ with $R>0$. The arbitrageur buys until $z=-h_-$. When the pool's log price is $u\in[-h_--R,-h_-]$, it sells at log price $u-\ln(1-f)$, which lies $v+c'$ below the market, with $c'=-\ln(1-c)\approx c$ and $v=-h_--u\in[0,R]$. With $\nu$ dollars per unit of $z$ (A4), the LP's loss against the market price is
+\begin{equation}
+\ell(R)=\nu\int_0^R(c+v)\,dv=\nu\big(cR+\tfrac12R^2\big).
+\end{equation}
+The arbitrageur pays $c$ on the $\nu R$ dollars he hedges, so his profit is $\nu R^2/2$. The fee never appears: it stays in the pool and only shifts the edge.
+
+\paragraph{A7. The push identity.} Let $Y_k=z_k+h_-\in[0,H]$, $H=2h$, be the position inside the band after block $k$, and $\varepsilon_k=-(\ln p_{k+1}-\ln p_k)$ the market move, with $\E[\varepsilon_k^2]=\sigma^2\Delta t$. With pushes $U_k=(Y_k+\varepsilon_k-H)^+$ at the top and $L_k=(-Y_k-\varepsilon_k)^+$ at the bottom,
+\begin{equation}
+Y_{k+1}=Y_k+\varepsilon_k-U_k+L_k .
+\end{equation}
+Squaring case by case: with no trade $Y_{k+1}^2=(Y_k+\varepsilon_k)^2$; with a top trade $Y_{k+1}^2=H^2=(Y_k+\varepsilon_k)^2-2HU_k-U_k^2$; with a bottom trade $Y_{k+1}^2=0=(Y_k+\varepsilon_k)^2-L_k^2$. In every case
+\begin{equation}
+Y_{k+1}^2=Y_k^2+2Y_k\varepsilon_k+\varepsilon_k^2-2HU_k-U_k^2-L_k^2 .
+\end{equation}
+In the stationary state $\E[Y_{k+1}^2]=\E[Y_k^2]$ and $\E[Y_{k+1}]=\E[Y_k]$. The market move $\varepsilon_k$ is independent of $Y_k$ with mean $\bar\varepsilon=\tfrac12\sigma^2\Delta t$, and the second condition gives $\E[U_k]-\E[L_k]=\bar\varepsilon$. Writing $2H\E[U_k]=H(\E[U_k]+\E[L_k])+H\bar\varepsilon$, the expectation of the squared recursion is
+\begin{equation}
+\sigma^2\Delta t+2\E[Y]\bar\varepsilon=H(\E[U]+\E[L])+H\bar\varepsilon+\E[U^2]+\E[L^2].
+\end{equation}
+The two drift terms cancel when $\E[Y]=H/2$, which holds by symmetry up to corrections of relative order $h$; the remainder is $O(h\sigma^2\Delta t)$ against $\sigma^2\Delta t$. Summing over a year, with $\Pi=\sum(U_k+L_k)$ and $M=\sum(U_k^2+L_k^2)$,
+\begin{equation}
+\sigma^2=2h\,\Pi+M\quad\Longrightarrow\quad \Pi=\frac{\sigma^2}{2(h+\rho)},\qquad \rho\equiv\frac{M}{2\Pi}.
+\end{equation}
+Apart from that first-order step, the identity uses no assumption on the distribution of the overshoots.
+
+\paragraph{A8. Turnover and loss.} Each unit of push trades $\nu$ dollars (A4) and costs the LP $c$ per dollar plus the overshoot term of A6. Per year, as a share of TVL,
+\begin{align}
+\Tpub&=\frac{\nu\Pi}{V}=\frac{w(1-w)\sigma^2}{2(h+\rho)}=\frac{\gamma^{*}}{h+\rho},\\
+\Lpub&=\frac{\nu}{V}\big(c\,\Pi+\tfrac12M\big)=w(1-w)\Pi(c+\rho)=\gamma^{*}\frac{c+\rho}{h+\rho},
+\end{align}
+using $\gamma^{*}=\tfrac12w(1-w)\sigma^2$ (A3). The loss splits into the hedging cost $\gamma^{*}c/(h+\rho)$, paid to external venues, and the arbitrage rent $\gamma^{*}\rho/(h+\rho)$, shared between arbitrageurs and block producers. This proves Proposition~\ref{prop:pub} given $\rho$.
+
+\paragraph{A9. The overshoot constant.} Consider the fast-block regime $\sigma\sqrt{\Delta t}\ll h$. After a top trade the band's top edge sits at the market's current log price. The next top trade happens at the first block where the market exceeds that level, and the push is the excess: top trades are the strict ascending ladder epochs of the random walk $-\ln p$, and the pushes are its ladder heights $H$. The exception is the first top trade after a bottom trade, a first passage over a level about $2h$ away; since a bottom trade needs a $2h$ drawdown, such trades are a fraction $O(\sigma\sqrt{\Delta t}/h)$ of all trades. For a Gaussian random walk with step standard deviation $\sigma\sqrt{\Delta t}$, renewal theory gives \cite{siegmund,bgk,nt}
+\begin{equation}
+\frac{\E[H^2]}{2\E[H]}=\beta\sigma\sqrt{\Delta t},\qquad \beta=-\frac{\zeta(1/2)}{\sqrt{2\pi}}=0.5826,
+\end{equation}
+the same constant that shifts a discretely monitored barrier \cite{bgk}. Hence $\rho=\beta\sigma\sqrt{\Delta t}\,[1+O(\sigma\sqrt{\Delta t}/h)]$. At the opposite extreme, $h\to0$, the pool trades every block, pushes are $|\varepsilon_k|$, and $\rho=\E[\varepsilon^2]/2\E|\varepsilon|=\sqrt{\pi/8}\,\sigma\sqrt{\Delta t}=0.627\,\sigma\sqrt{\Delta t}$; Eq.~\eqref{eq:pub} then gives $L=\gamma^{*}$ at $f=c=0$ for any $\rho$. A direct simulation with $7\times10^{6}$ ladder heights of a Gaussian walk gives $\E[H^2]/2\E[H]=0.584$, within 0.3\% of $\beta$.
+
+\paragraph{A10. Baskets.} In a weighted pool of $n-1$ risky tokens and USDC, an arbitrage of token $i$ against USDC changes only $x_i$ and $x_n$; with $x_i^{w_i}x_n^{w_n}$ fixed, the notional density of pair $i$ is $w_iw_n/(w_i+w_n)\,V$ and its trades shift every other token's price through $x_n$. We do not solve this coupled problem. We apply A8 token by token, assigning each token the share $\gamma_i/\sum_j\gamma_j$ of $\gamma^{*}$ with $\gamma_i=\tfrac12w_i(1-w_i)\sigma_i^2$, its two-asset premium against the rest of the pool, and its own $\rho_i=\beta\sigma_i\sqrt{\Delta t}$:
+\begin{equation}
+\Lpub\approx\gamma^{*}\sum_i\frac{\gamma_i}{\sum_j\gamma_j}\,\frac{c+\rho_i}{h+\rho_i}\approx\gamma^{*}\frac{c+\bar\rho}{h+\bar\rho},
+\end{equation}
+where the second step linearises in $\rho_i$ around $\bar\rho=\beta\sigma_{\mathrm{eff}}\sqrt{\Delta t}$, $\sigma_{\mathrm{eff}}=\sum_i\gamma_i\sigma_i/\sum_i\gamma_i$. The justification is empirical (Table~\ref{tab:valid}).
+
+\paragraph{A11. Gated turnover.} Between rebalances the weights evolve as $d\omega=(\mathrm{diag}(\omega)-\omega\omega^{\top})\,dp/p$, so near target the drift vector $x=\omega-w$ has covariance rate
+\begin{equation}
+\Omega=(\mathrm{diag}(w)-ww^{\top})\,\Sigma\,(\mathrm{diag}(w)-ww^{\top})
+\end{equation}
+and a drift of order $\sigma^2$ (A12), which changes $K$ only at second order in $\delta$. \emph{Two assets:} $x_1=-x_2=x$, $D=|x|$ and $dx=w(1-w)\sigma\,dW$, so $K=w^2(1-w)^2\sigma^2$. The expected exit time $u(x)$ from $(-\delta,\delta)$ solves $\tfrac12Ku''=-1$ with $u(\pm\delta)=0$, so $u(x)=(\delta^2-x^2)/K$ and $\E[\tau]=u(\din)=(\delta^2-\din^2)/K$. Each trip ends with a trade of $\delta-\din$, hence
+\begin{equation}
+\Tgat=\frac{\delta-\din}{(\delta^2-\din^2)/K}=\frac{K}{\delta+\din}.
+\end{equation}
+\emph{Baskets:} $D=\tfrac12\|x\|_1$ is not a one-dimensional diffusion, but Brownian scaling ($x\to ax$, $t\to a^2t$) makes $\E[\tau_\delta]$ proportional to $\delta^2$, so $K\equiv\delta^2/\E[\tau_\delta]$ is a constant of the basket. We compute it by simulating the Gaussian process with covariance $\Omega$ from zero until $\tfrac12\|x\|_1=\delta$: $K=0.0260$ for the core basket, the same at $\delta=1\%$ and $2.5\%$ (0.0262 and 0.0260). Neither simple closed form fits: $(\tfrac12\sum_i\sqrt{\Omega_{ii}})^2=0.035$ and $\tfrac12\operatorname{tr}\Omega=0.013$. For $\din>0$ in several dimensions we use $\E[\tau]\approx(\delta^2-\din^2)/K$, checked in Table~\ref{tab:gatevalid}.
+
+\paragraph{A12. Tracking.} Over $dt$, a portfolio with weights $\omega=w+x$ has expected log growth $\omega^{\top}\mu-\tfrac12\omega^{\top}\Sigma\omega$ (A1). Subtracting the benchmark's,
+\begin{equation}
+\frac{d}{dt}\E\big[\ln V-\ln V_{\mathrm{CRP}}\big]=x^{\top}\mu-w^{\top}\Sigma x-\tfrac12x^{\top}\Sigma x .
+\end{equation}
+\emph{Two assets, $\din=0$, $\mu=0$.} The vault restarts at $x=0$ after every exit, so the stationary density of $x$ is the occupation density of Brownian motion started at 0 and killed at $\pm\delta$, which is proportional to the Green's function $\delta-|x|$: a triangle. Hence
+\begin{equation}
+\E[x^2]=\frac{\int_{-\delta}^{\delta}x^2(\delta-|x|)dx}{\int_{-\delta}^{\delta}(\delta-|x|)dx}=\frac{2(\delta^4/3-\delta^4/4)}{\delta^2}=\frac{\delta^2}{6}.
+\end{equation}
+With driftless prices the risky weight drifts down: from $\omega=a/(a+b)$ with $da=a\sigma dW$, It\^o gives $d\omega=\omega(1-\omega)\sigma dW-\omega^2(1-\omega)\sigma^2dt$. A drift $m=-w^2(1-w)\sigma^2$ shifts the mean by $\E[x]\approx m\delta^2/(6K)=-\delta^2/(6(1-w))$ to first order in $m\delta/K$ (solve $\tfrac12Ku''+mu'=-x$, $u(\pm\delta)=0$, and divide $u(0)$ by $\E[\tau]$). The expected drag is therefore
+\begin{equation}
+L_{\mathrm{track}}=\tfrac12\sigma^2\E[x^2]+w\sigma^2\E[x]=\sigma^2\delta^2\Big(\frac1{12}-\frac{w}{6(1-w)}\Big),
+\end{equation}
+which is $-\sigma^2\delta^2/12$ at $w=\tfrac12$: a gain of 0.002\% a year at $\sigma=65\%$, $\delta=2.5\%$ (simulation: 0.000--0.006\%, within sampling error). The tracking \emph{noise}, the standard deviation of $\ln(V/V_{\mathrm{CRP}})$ after one year, is $\sqrt{\E[x^{\top}\Sigma x]}=\sigma\sqrt{\E[x^2]}=\sigma\delta/\sqrt6$.
+
+\paragraph{A13. Ratio and break-even.} Dividing Eq.~\eqref{eq:pub} by Eq.~\eqref{eq:gate} with $L_{\mathrm{track}}$ neglected gives Eq.~\eqref{eq:ratio}. Setting the ratio to one gives $s^{*}$. Setting $\Lpub(f)=\Lgat$ and solving $(c+\rho)/(h+\rho)=r$, with $r=sK/(\gamma^{*}(\delta+\din))$, gives $h^{*}=(c+\rho)/r-\rho$; with $h\approx f+c$ the matching public fee is $f^{*}\approx(c+\rho)(1/r-1)$. At fees of several percent the first-order band is no longer accurate, so Table~\ref{tab:theory} solves Eq.~\eqref{eq:h} for $f$ exactly.
+
+\paragraph{A14. The public pool in weight terms.} A rule that trades back to the edge of a weight band $\pm\delta_{\mathrm{eq}}$ has, by A11 with $\din\to\delta$, turnover $K/2\delta_{\mathrm{eq}}$. Equating to $\Tpub=\gamma^{*}/(h+\rho)$ gives $\delta_{\mathrm{eq}}=K(h+\rho)/2\gamma^{*}$, which is $w(1-w)(h+\rho)$ for two assets.
+
+\paragraph{A15. Price impact on the quote layer.} Buying token $i$ with $dn$ of token $n$ on virtual reserves changes the pair price $P=(x_n/w_n)/(x_i/w_i)$ by $d\ln P=dn/x_n+dx_i/x_i$ with $dx_i\approx dn/P$. With $x_n=w_n\NAV/p_n$ and $Px_i=(w_i/w_n)x_n$,
+\begin{equation}
+d\ln P=\frac{dn}{\NAV}\Big(\frac1{w_n}+\frac1{w_i}\Big).
+\end{equation}
+A buy of size $A$ pays on average half the final move, $\tfrac12A^2(1/w_n+1/w_i)/\NAV$, plus the fee.
+
+\paragraph{A16. Latency and selection on the quote layer.} Let the quote be centred on a price that differs from the true price by a log gap $X$. A trader who knows $X$ buys or sells up to the cap $q$ per window when $|X|$ exceeds the fee plus impact. With fee $f$ alone and $X\sim N(0,\sigma_L^2)$, $\sigma_L=\sigma\sqrt{L}$ for an oracle lag $L$, the leak per window is
+\begin{equation}
+q\,\E\big[(|X|-f)^+\big]=2q\Big[\sigma_L\varphi\Big(\frac{f}{\sigma_L}\Big)-f\Big(1-\Phi\Big(\frac{f}{\sigma_L}\Big)\Big)\Big].
+\end{equation}
+With a pull oracle and freshness window $\tau$, the trader may choose any signed price from the last $\tau$ seconds. The best one for buying is the minimum of the path over the window, whose distance from the current price is the maximum of a Brownian motion over $\tau$; by the reflection principle it is distributed as $|N(0,\sigma^2\tau)|$ on each side. Selection therefore turns a lag of $L$ into a lag of about $L+\tau$, with the better of two sides. A jump $J$ between the true price and the oracle gives an edge of $|J|-f$ on up to $q$ of TVL, so jumps at rate $\lambda$ leak about $\lambda q\,\E[(|J|-f-\bar\imath)^+]$ a year, where $\bar\imath$ is the average impact paid. Next-price execution sets $X$ to zero by construction.
+
+\paragraph{A17. Informed flow.} Let retail pay the fee $f$ and average impact $\bar\imath$ per dollar, $k=f+\bar\imath$, and let a fraction $\varphi$ of volume come from traders who know the price change $r_H$ over a horizon $H$ and trade only when $|r_H|>k$. Their trades earn $m-k$ a dollar, with $m=\E[\,|r_H|\,\big|\,|r_H|>k]$; for $r_H\sim N(0,s^2)$, $m=s\varphi(k/s)/(1-\Phi(k/s))$. LP income per dollar of volume is $(1-\varphi)k-\varphi(m-k)=k-\varphi m$, positive while $\varphi<\varphi^{*}=k/m$.
+
+\paragraph{A18. Constant-product pairs.} A 50/50 pair of token $i$ and USDC, rebalanced continuously at fair prices, has $d\ln V=\tfrac12d\ln p_i+\tfrac18\sigma_i^2dt$ by A1, so $V(t)=V(0)\sqrt{p_i(t)/p_i(0)}\,e^{\sigma_i^2t/8}$. Pairs on different tokens change relative size with the square root of relative prices, so a basket built from pairs drifts unless value is moved between them.

@@ -1,0 +1,54 @@
+% Figure 2: loss of a public weighted pool by fee and arbitrage cost (black and white, pgfplots)
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1,horizontal sep=11mm},
+  width=88mm,height=60mm,xmode=log,ymode=log,xmin=1,xmax=100,ymin=0.02,ymax=12,
+  xtick={1,2,5,10,20,50,100},xticklabels={1,2,5,10,20,50,100},
+  ytick={0.05,0.1,0.2,0.5,1,2,5,10},yticklabels={0.05,0.1,0.2,0.5,1,2,5,10},
+  tick style={black,line width=0.4pt},minor tick num=0,tick align=inside,
+  every axis/.append style={font=\footnotesize,line width=0.5pt},
+  ticklabel style={font=\scriptsize},
+  xlabel={Swap fee $f$ (bps)},
+  title style={font=\footnotesize,yshift=-1mm},
+  legend style={font=\scriptsize,draw=black,line width=0.4pt,fill=white,inner sep=1.5pt,row sep=-1pt,legend cell align=left,at={(0.025,0.025)},anchor=south west},
+  legend columns=2,
+  cycle list={
+   {black,solid,mark=o,mark options={solid,fill=white}},
+   {black,dashed,mark=square,mark options={solid,fill=white}},
+   {black,dashdotted,mark=triangle,mark options={solid,fill=white}},
+   {black,densely dotted,mark=diamond,mark options={solid,fill=white}}}]
+\nextgroupplot[title={ETH/USDC 50/50 ($\gamma^{*}=5.28\%$)},ylabel={Loss against benchmark (\% of TVL a year)}]
+\addplot[black,line width=0.7pt,solid,forget plot] table[x=f,y=c0]{fig/law_eth.dat};
+\addplot[black,only marks,mark=o,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_eth_c0.dat};
+\addplot[black,line width=0.7pt,dashed,forget plot] table[x=f,y=c2]{fig/law_eth.dat};
+\addplot[black,only marks,mark=square,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_eth_c2.dat};
+\addplot[black,line width=0.7pt,dashdotted,forget plot] table[x=f,y=c10]{fig/law_eth.dat};
+\addplot[black,only marks,mark=triangle,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_eth_c10.dat};
+\addplot[black,line width=0.7pt,densely dotted,forget plot] table[x=f,y=c20]{fig/law_eth.dat};
+\addplot[black,only marks,mark=diamond,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_eth_c20.dat};
+\addplot[black,line width=0.4pt,domain=1:100,forget plot] {5.28};
+\node[font=\scriptsize\itshape,anchor=north east,inner sep=1pt] at (axis cs:95,5.0) {zero-fee loss $\gamma^{*}$};
+\addplot[black,line width=0.8pt,domain=1:100,forget plot] {0.1056};
+\node[font=\scriptsize\itshape,anchor=north east,inner sep=1pt] at (axis cs:95,0.1) {gated, $s=10$\,bps};
+\addplot[black,line width=0.5pt,loosely dashed,domain=1:100,forget plot] {0.3169};
+\node[font=\scriptsize\itshape,anchor=south west,inner sep=1pt] at (axis cs:1.1,0.33) {gated, $s=30$\,bps (cap)};
+\nextgroupplot[title={Core basket ($\gamma^{*}=8.48\%$)}]
+\addplot[black,line width=0.7pt,solid,forget plot] table[x=f,y=c0]{fig/law_core.dat};
+\addplot[black,only marks,mark=o,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_core_c0.dat};
+\addplot[black,line width=0.7pt,dashed,forget plot] table[x=f,y=c2]{fig/law_core.dat};
+\addplot[black,only marks,mark=square,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_core_c2.dat};
+\addplot[black,line width=0.7pt,dashdotted,forget plot] table[x=f,y=c10]{fig/law_core.dat};
+\addplot[black,only marks,mark=triangle,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_core_c10.dat};
+\addplot[black,line width=0.7pt,densely dotted,forget plot] table[x=f,y=c20]{fig/law_core.dat};
+\addplot[black,only marks,mark=diamond,mark size=1.9pt,mark options={fill=white,line width=0.5pt},forget plot] table[x=f,y=L]{fig/sim_core_c20.dat};
+\addplot[black,line width=0.4pt,domain=1:100,forget plot] {8.48};
+\node[font=\scriptsize\itshape,anchor=north east,inner sep=1pt] at (axis cs:95,8.0) {zero-fee loss $\gamma^{*}$};
+\addplot[black,line width=0.8pt,domain=1:100,forget plot] {0.104};
+\node[font=\scriptsize\itshape,anchor=south east,inner sep=1pt] at (axis cs:95,0.108) {gated, $s=10$\,bps};
+\addplot[black,line width=0.5pt,loosely dashed,domain=1:100,forget plot] {0.312};
+\node[font=\scriptsize\itshape,anchor=south west,inner sep=1pt] at (axis cs:1.1,0.325) {gated, $s=30$\,bps (cap)};
+\addlegendimage{black,line width=0.7pt,solid,mark=o,mark options={solid,fill=white}}\addlegendentry{$c=0$\,bps}
+\addlegendimage{black,line width=0.7pt,dashed,mark=square,mark options={solid,fill=white}}\addlegendentry{$c=2$\,bps}
+\addlegendimage{black,line width=0.7pt,dashdotted,mark=triangle,mark options={solid,fill=white}}\addlegendentry{$c=10$\,bps}
+\addlegendimage{black,line width=0.7pt,densely dotted,mark=diamond,mark options={solid,fill=white}}\addlegendentry{$c=20$\,bps}
+\end{groupplot}
+\end{tikzpicture}

@@ -1,0 +1,111 @@
+\section{Theory: what rebalancing costs}
+\label{sec:theory}
+
+This section derives the loss of each design against the frictionless benchmark. Full derivations are in Appendix~\ref{app:deriv} and every number is recomputed by hand in Appendix~\ref{app:ex}.
+
+\subsection{What arbitrage takes at zero fee}
+
+\begin{prop}[Excess growth]\label{prop:gamma}
+A constant-weight portfolio rebalanced continuously at no cost grows as
+\begin{equation}
+\begin{aligned}
+d\ln V_{\mathrm{CRP}}&=\sum_i w_i\,d\ln p_i+\gamma^{*}dt,\\
+\gamma^{*}&=\tfrac12\Big(\sum_i w_i\sigma_i^2-w^{\top}\Sigma w\Big),
+\end{aligned}
+\label{eq:gamma}
+\end{equation}
+while a weighted pool with zero fee and continuous arbitrage grows as $d\ln V=\sum_i w_i\,d\ln p_i$. Its loss is therefore $L=\gamma^{*}$.
+\end{prop}
+
+$\gamma^{*}$ is the excess growth rate of stochastic portfolio theory \cite{fernholz} and the multi-asset loss-versus-rebalancing of a weighted pool \cite{lvr,evans}. It is 5.28\% a year for ETH/USDC ($\sigma^2/8$) and 8.48\% for the core basket (B1). It is the most a public pool can pay, reached only at zero fee. What it actually pays depends on its fee and on its arbitrageurs' costs.
+
+\subsection{A public pool is a band rebalancer}
+\label{sec:pub}
+
+Between blocks a public pool's price stays where the last trade left it while the market moves. An arbitrageur trades only when the pool's ask, fee included, is below what he can sell for elsewhere after his own costs, $p(1-c)$, or its bid above $p(1+c)$. He trades up to the edge where his marginal profit is zero and no further. The pool's log price is therefore held inside a band of half-width
+\begin{equation}
+h=\tfrac12\ln\frac{1+c}{1-c}-\ln(1-f)\;\approx\;f+c
+\label{eq:h}
+\end{equation}
+around the market, and is pushed back to the edge whenever the market moves it out. That is exactly a rebalancing rule: trade back to the edge of a no-trade band. Every dollar so traded costs the LP the arbitrageur's hedge cost $c$, which he must recover, plus the amount by which the market had overshot the edge by the time a block arrived, which is his profit.
+
+\begin{prop}[Cost of a public pool]\label{prop:pub}
+For a two-asset weighted pool at weight $w$ with fee $f$, arbitrage cost $c$ and blocks every $\Delta t$, to first order in $h$,
+\begin{equation}
+\Lpub=\gamma^{*}\,\frac{c+\rho}{h+\rho},\qquad \Tpub=\frac{\gamma^{*}}{h+\rho},
+\label{eq:pub}
+\end{equation}
+where $\rho=\E[R^2]/2\E[R]$ is half the push-weighted mean overshoot $R$ of the market beyond the band edge. For $\sigma\sqrt{\Delta t}\ll h$, $\rho=\beta\sigma\sqrt{\Delta t}$ with $\beta=-\zeta(\tfrac12)/\sqrt{2\pi}\approx0.5826$.
+\end{prop}
+\begin{proof}[Sketch]
+Stationarity of the squared position inside the band gives the identity $\sigma^2=2h\Pi+M$, exact up to terms of relative order $h$, where $\Pi$ is the total log-price push per year and $M$ the sum of squared pushes (A7). Each unit of push trades $w(1-w)$ of TVL and costs the LP $c$ plus the overshoot (A4, A6), which yields Eq.~\eqref{eq:pub} with $\rho=M/2\Pi$. Overshoots are the ladder heights of a Gaussian random walk, whose constant is $\beta$ \cite{siegmund,bgk,nt} (A9).
+\end{proof}
+
+Equation~\eqref{eq:pub} splits the loss into the arbitrageurs' hedging cost, $\gamma^{*}c/(h+\rho)$, and their rent, $\gamma^{*}\rho/(h+\rho)$. Four consequences follow.
+
+\paragraph{It nests the known cases.} At $f=c=0$, $L=\gamma^{*}$ (Proposition~\ref{prop:gamma}). At $c=0$, $L=\gamma^{*}\rho/(f+\rho)\to0$ as blocks get faster: fees then fully compensate LPs, as Milionis et al.\ showed \cite{lvrfees}. Their probability-of-trade formula assumes Poisson blocks. For fixed blocks and $c=0$, Eq.~\eqref{eq:pub} coincides with the formula of Nezlobin and Tassy \cite{nt}, who found the same constant by a different route (0.38\% for ETH/USDC at 30\bps\ and 12\,s, where the Poisson formula gives 0.46\%; B6). What is new here is the cost $c$.
+
+\paragraph{Faster blocks cannot remove the cost term.} As $\Delta t\to0$, $\rho\to0$ and $\Lpub\to\gamma^{*}c/(f+c)$. At $f=30$\bps\ and $c=10$\bps\ that floor is 1.32\% a year for ETH/USDC and 2.12\% for the core basket, against 1.54\% and 2.53\% with 12-second blocks.
+
+\paragraph{The fee is the only lever, and it is the wrong one.} The fee enters only the denominator, by widening the band. To bring the core basket's loss to 0.10\% a year a public pool would need a fee of about 10\% at $c=10$\bps\ and 12-second blocks (B9), and 2.2\% even with costless arbitrage (Table~\ref{tab:theory}). Little retail flow trades at such fees. Only costless arbitrage on fast blocks brings the matching fee down to 0.4--0.9\%. This is the fee dilemma in quantitative form: the parameter that sets how often the pool rebalances is the same one that sets what retail pays.
+
+\paragraph{In weight terms the band is tiny.} The price band corresponds to a weight band $\delta_{\mathrm{eq}}=w(1-w)(h+\rho)$, about 0.11\% of weight for ETH/USDC at $f=30$\bps\ and $c=10$\bps, against the 2.5\% a gated pool uses (A14, B4).
+
+\paragraph{Baskets.} For $n-1$ risky tokens each arbitraged against USDC, we use
+\begin{equation}
+\Lpub\approx\gamma^{*}\,\frac{c+\bar\rho}{h+\bar\rho},\quad \bar\rho=\beta\sigma_{\mathrm{eff}}\sqrt{\Delta t},\quad \sigma_{\mathrm{eff}}=\frac{\sum_i\gamma_i\sigma_i}{\sum_i\gamma_i},
+\label{eq:pubn}
+\end{equation}
+with $\gamma_i=\tfrac12w_i(1-w_i)\sigma_i^2$ each token's two-asset premium against the rest of the pool. This is an approximation, not a theorem (A10); for the core basket $\sigma_{\mathrm{eff}}=77.1\%$, and Section~\ref{sec:valid} finds it within 3\% of simulation at fees of 30\bps\ or more.
+
+\subsection{The gated pool}
+\label{sec:gated}
+
+\begin{prop}[Cost of a gated pool]\label{prop:gate}
+Let drift $D$ (Eq.~\ref{eq:drift}) have variance rate $K$ near target, and let the vault trade back to drift $\din$ whenever $D$ reaches $\delta$, paying spread $s$ on the notional. Then
+\begin{equation}
+\Tgat=\frac{K}{\delta+\din},\qquad \Lgat=\frac{sK}{\delta+\din}+L_{\mathrm{track}},
+\label{eq:gate}
+\end{equation}
+with $L_{\mathrm{track}}=O(\sigma^2\delta^2)$. For two assets $K=w^2(1-w)^2\sigma^2=2w(1-w)\gamma^{*}$.
+\end{prop}
+\begin{proof}[Sketch]
+In one dimension the expected time for drift to travel from $\din$ to $\delta$ is $(\delta^2-\din^2)/K$, and each trip trades $\delta-\din$ (A11). With several assets, $K\equiv\delta^2/\E[\tau_\delta]$ is a constant of the basket by Brownian scaling; for the core basket $K=0.0260$ (A11). Holding weights $x=\omega-w$ away from target changes expected log growth by $x^{\top}\mu-w^{\top}\Sigma x-\tfrac12x^{\top}\Sigma x$, which is second order in $\delta$ (A12).
+\end{proof}
+
+For the core basket at $\delta=2.5\%$ and $s=10$\bps, the vault turns over $1.04\times$ TVL a year and loses 0.104\%. The expected tracking term is of order $\sigma^2\delta^2$ and, with driftless prices, a small gain: at most 0.06\% a year for $\delta\le5\%$ in Table~\ref{tab:gatevalid}. What a wider band costs is tracking \emph{noise}, a standard deviation of $\sigma\delta/\sqrt6$ per $\sqrt{\text{year}}$ for two assets (0.66\% for ETH/USDC at $\delta=2.5\%$; B8). The band is therefore a product choice, how far from target the basket may wander, more than a cost trade-off. Trading back only to $\din=\delta/2$ instead of to target cuts turnover by a third; trading to the edge ($\din\to\delta$) halves it, at the price of many small fills, which is the classic result for proportional costs \cite{davisnorman,magill}.
+
+\subsection{Comparison}
+
+\begin{prop}[Ratio and break-even]\label{prop:ratio}
+Under Propositions~\ref{prop:pub} and \ref{prop:gate},
+\begin{equation}
+\frac{\Lpub}{\Lgat}=\underbrace{\frac{\gamma^{*}(\delta+\din)}{K(h+\rho)}}_{\Tpub/\Tgat}\cdot\underbrace{\frac{c+\rho}{s}}_{\text{cost per \$}},
+\label{eq:ratio}
+\end{equation}
+so the gated pool is cheaper whenever $s<s^{*}=\gamma^{*}(c+\rho)(\delta+\din)/K(h+\rho)$.
+\end{prop}
+
+The ratio has two factors. The first is how much less often the gated pool trades; it depends on the fee and the band, not on costs, and is 19--27 for the core basket at a 30\bps\ fee and $\delta=2.5\%$. The second compares what a dollar of rebalancing costs each design, and it is where the thesis can fail: if arbitrage were frictionless ($c=0$) on sub-second blocks, $c+\rho$ would fall to half a basis point and the first factor would have to carry the comparison alone. Table~\ref{tab:theory} evaluates Eq.~\eqref{eq:ratio}.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{3.2pt}
+\caption{Theory for the core basket: public pool at a 30\bps\ fee against a gated pool at $\delta=2.5\%$, $\din=0$, $s=10$\bps\ (loss 0.104\% a year). $s^{*}$: break-even solver spread; $f^{*}$: public fee that would match the gated cost (exact band, Eq.~\ref{eq:h}).}
+\label{tab:theory}
+\begin{tabular}{rrrrrrr}
+\toprule
+$\Delta t$ & $c$ (bps) & $\bar\rho$ (bps) & $\Lpub$ (\%) & Ratio & $s^{*}$ (bps) & $f^{*}$ (\%)\\
+\midrule
+12\,s & 0 & 2.77 & 0.72 & 6.9 & 69 & 2.2\\
+12\,s & 2 & 2.77 & 1.16 & 11.2 & 112 & 3.8\\
+12\,s & 10 & 2.77 & 2.53 & 24.3 & 243 & 9.8\\
+2\,s & 0 & 1.13 & 0.31 & 3.0 & 30 & 0.9\\
+2\,s & 10 & 1.13 & 2.29 & 22.0 & 220 & 8.6\\
+0.4\,s & 0 & 0.51 & 0.14 & 1.4 & 14 & 0.4\\
+0.4\,s & 2 & 0.51 & 0.65 & 6.3 & 63 & 2.0\\
+0.4\,s & 10 & 0.51 & 2.20 & 21.1 & 211 & 8.1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Because the invariants cap the spread at $s_{\max}=30$\bps, a gated pool cannot lose to a 30\bps\ public pool on rebalancing cost in any row with $s^{*}>30$\bps, whatever its solvers charge. The exception is frictionless arbitrage on blocks of 2 seconds or less, where the gate wins only if solvers charge less than 14--30\bps.

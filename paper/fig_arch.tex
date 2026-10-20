@@ -1,0 +1,23 @@
+% Figure 1: architecture of one gated pool (black and white, TikZ)
+\begin{tikzpicture}[x=1mm,y=1mm,
+  box/.style={draw,line width=0.5pt,minimum width=22.6mm,minimum height=11mm,align=center,inner sep=1.2pt,font=\scriptsize,fill=white},
+  key/.style={box,double,double distance=0.9pt},
+  ttl/.style={font=\scriptsize\bfseries},
+  lab/.style={font=\tiny\itshape,inner sep=1.2pt},
+  tip/.style={-{Stealth[length=1.7mm,width=1.2mm]},line width=0.45pt},
+  both/.style={{Stealth[length=1.7mm,width=1.2mm]}-{Stealth[length=1.7mm,width=1.2mm]},line width=0.45pt}]
+\node[box] (ret) at (0,0)   {\textbf{Retail traders}\\anyone, size-capped\\pay fee and impact};
+\node[key] (quo) at (29.2,0)  {\textbf{Quote layer}\\thin weighted curve\\centred on the oracle};
+\node[box] (ora) at (58.4,0)  {\textbf{Oracle adapter}\\two price feeds\\stale or split: halt};
+\node[box] (lps) at (0,-19) {\textbf{Liquidity providers}\\deposit and redeem\\in kind, any time};
+\node[box] (vau) at (29.2,-19){\textbf{Vault inventory}\\basket at weights $w$\\keeps fee and impact};
+\node[box] (sol) at (29.2,-38){\textbf{Bonded solvers}\\Dutch auction\\fill at oracle $\pm s$};
+\node[box] (ext) at (58.4,-38){\textbf{External venue}\\exchange or perps\\hedges each fill};
+\draw[both] (ret) -- node[lab,above]{swaps} (quo);
+\draw[tip]  (ora) -- node[lab,above]{anchor} (quo);
+\draw[both] (lps) -- node[lab,above]{in kind} (vau);
+\draw[both] (sol) -- node[lab,above]{hedge} (ext);
+\draw[both] (quo) -- node[lab,right,align=left]{re-centred every\\block, internally} (vau);
+\draw[both] (vau) -- node[lab,left,align=right]{only when\\$D>\delta$} (sol);
+\draw[tip] (ora.south) -- (58.4,-28.5) node[lab,left,align=right,pos=0.62]{bounds every\\fill at $\pm s$} -- (37,-28.5) -- (37,-32.5);
+\end{tikzpicture}

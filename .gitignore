@@ -1,0 +1,17 @@
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+paper/main.pdf
+# Simulation binaries and partial runs
+simulations/sim_v
+simulations/sim2
+simulations/sim_cp
+simulations/ladder
+simulations/v/*.csv.tmp
+__pycache__/
+.DS_Store

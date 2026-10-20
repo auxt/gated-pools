@@ -1,0 +1,123 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[a4paper,top=22mm,bottom=24mm,left=19mm,right=19mm,columnsep=7mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
+\usepackage{titlesec}
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks,breaklinks]{hyperref}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{abstract}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.8em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection}{0.8em}{}
+\titlespacing*{\section}{0pt}{1.6ex plus .15ex minus .2ex}{0.8ex plus .05ex}
+\titlespacing*{\subsection}{0pt}{1.3ex plus .1ex minus .15ex}{0.5ex plus .05ex}
+\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}{0pt}{0.9ex plus .1ex minus .1ex}{0.6em}
+\setlist{nosep,leftmargin=1.4em}
+\setlength{\parskip}{0pt plus 0.15pt}
+\setlength{\parindent}{1.2em}
+\renewcommand{\arraystretch}{1.12}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcommand{\bps}{\,bps}
+\newcommand{\TVL}{\mathrm{TVL}}
+\newcommand{\NAV}{\mathrm{NAV}}
+\newcommand{\Lpub}{L_{\mathrm{pub}}}
+\newcommand{\Lgat}{L_{\mathrm{gate}}}
+\newcommand{\Tpub}{T_{\mathrm{pub}}}
+\newcommand{\Tgat}{T_{\mathrm{gate}}}
+\newcommand{\din}{\delta_{\mathrm{in}}}
+\newcommand{\E}{\mathbb{E}}
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\makeatletter
+\renewenvironment{proof}[1][\proofname]{\par\pushQED{\qed}\normalfont\topsep2pt\relax\trivlist\item[\hskip\labelsep\itshape#1.]\ignorespaces}{\popQED\endtrivlist\@endpefalse}
+\makeatother
+\urlstyle{same}\def\UrlBreaks{\do\/\do-\do\.\do\_\do\?\do\=\do\&}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape Gated Pools: on-chain index baskets that rebalance at a band, not at the fee}
+\fancyhead[R]{\small Draft v0.3}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setcounter{secnumdepth}{3}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\textfraction}{0.25}
+\renewcommand{\floatpagefraction}{0.95}
+\renewcommand{\dblfloatpagefraction}{0.95}
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{3}
+\setcounter{totalnumber}{5}
+\setlength{\floatsep}{9pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{11pt plus 1pt minus 2pt}
+\setlength{\dblfloatsep}{9pt plus 1pt minus 1pt}
+\setlength{\dbltextfloatsep}{11pt plus 1pt minus 2pt}
+\setlength{\intextsep}{9pt plus 1pt minus 1pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+\captionsetup[table]{skip=4pt}
+\makeatletter
+\setlength{\@fptop}{0pt}\setlength{\@dblfptop}{0pt}
+\setlength{\@fpsep}{9pt}\setlength{\@dblfpsep}{9pt}
+\setlength{\@fpbot}{0pt plus 1fil}\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
+\usepackage{balance}
+\makeatletter\g@addto@macro\normalsize{\setlength\baselineskip{12pt plus 0.15pt}}\makeatother
+\clubpenalty=300 \widowpenalty=300
+\makeatletter
+\@clubpenalty=300
+\def\@afterheading{\@nobreaktrue\everypar{\if@nobreak\@nobreakfalse\clubpenalty 2500
+  \if@afterindent\else{\setbox\z@\lastbox}\fi\else\clubpenalty\@clubpenalty\everypar{}\fi}}
+\makeatother
+
+\title{\vspace{-6mm}\LARGE Gated Pools: On-Chain Index Baskets\\That Rebalance at a Band, Not at the Fee\vspace{1mm}}
+\author{Robert Auxt\\[2pt] \small Draft v0.3 \textperiodcentered\ October 19, 2026}
+\date{}
+
+\begin{document}
+\twocolumn[
+\begin{@twocolumnfalse}
+\maketitle
+\vspace{-8mm}
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+\vspace{1mm}
+\noindent\small\textbf{Keywords:} automated market makers; loss-versus-rebalancing; weighted pools; index baskets; transaction costs; band rebalancing; oracle-anchored quoting.
+\vspace{5mm}
+\end{@twocolumnfalse}
+]
+
+\input{s1}
+\input{s2}
+\input{s3}
+\input{s4}
+\input{s5}
+\input{s7}
+\input{s6}
+\input{appA}
+\input{appB}
+\input{appC}
+\input{bib}
+
+\end{document}

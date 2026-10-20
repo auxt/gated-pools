@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Gated Pools: On-Chain Index Baskets That Rebalance at a Band, Not at the Fee"
+authors:
+  - family-names: Auxt
+    given-names: Robert
+version: "0.3"
+date-released: "2026-10-20"
+url: "https://github.com/auxt/gated-pools"
+repository-code: "https://github.com/auxt/gated-pools"
+license: CC-BY-4.0
+keywords:
+  - automated market makers
+  - loss-versus-rebalancing
+  - weighted pools
+  - index baskets
+  - transaction costs
+  - band rebalancing
+  - oracle-anchored quoting
+preferred-citation:
+  type: report
+  title: "Gated Pools: On-Chain Index Baskets That Rebalance at a Band, Not at the Fee"
+  authors:
+    - family-names: Auxt
+      given-names: Robert
+  year: 2026
+  month: 10
+  notes: "White paper, Draft v0.3"
+  url: "https://github.com/auxt/gated-pools"

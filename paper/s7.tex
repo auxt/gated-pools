@@ -1,0 +1,42 @@
+\section{Retail flow and alternative designs}
+\label{sec:retail}
+
+The comparison so far needs no retail flow. Where retail does come, it pays the fee plus price impact, and designs differ in how much of that LPs keep. Table~\ref{tab:retail} gives the net LP result, retail income minus loss against the benchmark, for uninformed retail at 0, 5 and 20 times TVL a year (C5), with 12-second blocks and $c=s=10$\bps.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Net LP result with retail flow, \% of TVL a year: retail income minus loss against the benchmark, by retail volume ($\times$ TVL a year), and at $5\times$ with jumps. Core basket, 12-second blocks, $c=s=10$\bps, 100 paths; standard errors at most 0.04. Single-arbitrageur rows from the earlier simulator (C8).}
+\label{tab:retail}
+\begin{tabular}{L{37mm}rrrr}
+\toprule
+Design & $0\times$ & $5\times$ & $20\times$ & Jumps\\
+\midrule
+\csname @@input\endcsname tab_retail.tex 
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Where the income goes.} At $5\times$ volume retail pays 1.50\% of TVL in fees and 0.84\% in impact. A public pool keeps the fee but its arbitrageurs reverse each trade's price impact and keep most of it, paying $c$ on the way; the anchored quote keeps both, because re-centring is internal. The gated pool's lead therefore grows with volume, from 2.4 points over the 30\bps\ public pool with no retail to 2.8 at $5\times$ and 4.0 at $20\times$; with jumps it is 4.4 at $5\times$.
+
+\paragraph{Why the quote is anchored, not synced.} The obvious alternative is a public weighted pool in which one exclusive wallet does all the arbitrage and remits its profit to LPs. It recovers the rent, but in a weighted pool the quote is the inventory, so every sync is a hedged trade. The single-arbitrageur pool is therefore another band rebalancer, with its band set by how fresh it wants its quote to be: syncing whenever the gap reaches $g$ turns over about $\sigma^2/4g$ for two assets, and costs $c\sigma^2/4g$. A fresh quote ($g=0.3\%$) costs the basket 5.1\% a year; a lazy one ($g=1\%$) 1.6\%, with quotes stale enough for informed traders to pick off. The coupling the gate removes is between the price a pool quotes and the inventory it holds; the anchored quote layer moves the price without moving the inventory.
+
+\paragraph{A constant-product version.} A constant-product pool is the two-token, 50/50 case of a weighted pool, so the theory applies with $N=2$, and the gate works for it as for the vault (Table~\ref{tab:cp}). What changes is how a basket is built from pairs. In a hub of token/USDC pairs every pair is half stablecoin, so the basket is 50\% USDC. In a tree of token/token pairs a retail trade crosses several pools and pays several fees. Either way each pair rebalances only inside itself and the pairs' relative sizes drift with the square root of relative prices (A18, B14). On the hub basket, where all designs can hold the same weights, gating cuts the pairs' loss without retail from 1.79\% to 0.16\%, while the 5\bps\ tier common for majors loses 4.3\% without it. Gated pairs appear to beat the gated vault at $5\times$ volume ($+2.47\%$ against $+2.09\%$), only because each pair holds just its token's share of value, so the same trade moves its price further and retail pays 57\bps\ a trade instead of 46: in a gated design that is a pricing choice the vault could match with a higher fee. Pairs drift twice as far from target (2.6\% against 1.2\%), and a cross-pair rebalancer that fixes this turns them into a gated vault split across contracts. The vault therefore stays the base design, and a single token against USDC is a gated pool with $N=2$.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{2.4pt}
+\caption{Constant-product pairs against weighted designs on the hub basket (50\% USDC): net LP result, \% of TVL a year; retail cost per trade (bps) and average drift from target. 100 paths; standard errors 0.05--0.15.}
+\label{tab:cp}
+\begin{tabular}{L{25mm}rrrrrr}
+\toprule
+Design & $0\times$ & $5\times$ & $20\times$ & Jumps & Retail & Drift\\
+\midrule
+Public weighted, 30\bps & $-2.35$ & $-0.45$ & $+5.22$ & $-1.87$ & 46 & 0.1\%\\
+Public CP pairs, 30\bps & $-1.79$ & $+0.09$ & $+6.26$ & $-1.09$ & 57 & 2.3\%\\
+Public CP pairs, 5\bps & $-4.29$ & $-4.01$ & $-2.76$ & $-5.28$ & 33 & 2.3\%\\
+\addlinespace
+Gated weighted vault & $-0.13$ & $+2.09$ & $+9.12$ & $+2.15$ & 46 & 1.2\%\\
+Gated CP pairs & $-0.16$ & $+2.47$ & $+11.16$ & $+2.42$ & 57 & 2.6\%\\
+Gated CP pairs, cross-pair rebalancing & $-0.21$ & $+2.58$ & $+11.08$ & $+2.69$ & 57 & 1.2\%\\
+\bottomrule
+\end{tabular}
+\end{table}

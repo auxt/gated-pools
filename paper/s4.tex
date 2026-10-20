@@ -1,0 +1,43 @@
+\section{Validation}
+\label{sec:valid}
+
+The propositions rest on first-order approximations, and Eq.~\eqref{eq:pubn} on a heuristic. We test them against a block-by-block simulation with exact weighted-pool arithmetic, competitive arbitrage to the edge of profitability and LP value measured at true prices (Appendix~\ref{app:sim}). Every design in a scenario runs on the same price paths.
+
+\begin{figure*}[t]
+\centering
+\input{fig_law}
+\caption{Loss of a public weighted pool against the frictionless benchmark, by swap fee and arbitrage cost $c$, with 12-second blocks. Curves: Eq.~\eqref{eq:pub} (ETH/USDC) and Eq.~\eqref{eq:pubn} (core basket). Open markers: simulation, 60--100 one-year paths each; standard errors are smaller than the markers. Horizontal lines: zero-fee loss $\gamma^{*}$, and the gated pool at $\delta=2.5\%$ with a 10\bps\ spread (heavy) and at the 30\bps\ cap (dashed).}
+\label{fig:law}
+\end{figure*}
+
+\paragraph{Public pools.} Figure~\ref{fig:law} and Table~\ref{tab:valid} compare simulated loss and turnover with the theory. For ETH/USDC, across all 32 combinations tested (fees of 1, 5, 30 and 100\bps; $c$ of 0, 2, 10 and 20\bps\ at 12\,s; $c$ of 0 and 10\bps\ at 2\,s and 0.4\,s), Eq.~\eqref{eq:pub} is within 1.4\% of the simulated loss and 1.2\% of the simulated turnover. For the core basket, Eq.~\eqref{eq:pubn} is within 3\% of the simulated loss whenever $f\ge30$\bps, $c\ge10$\bps\ or blocks are fast. It fails when the overshoot is large relative to the band: at $f=5$\bps, $c=0$ and 12-second blocks it overstates the loss by 15\% (3.02\% against 2.64\%) and understates turnover by 7\%, because one token's arbitrage moves the USDC reserve and with it every other token's mispricing. The public pool then loses less than the formula says, but still 25 times what the gated pool does.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{3.3pt}
+\caption{Public pools: simulated (sim.) against predicted (th.) turnover ($\times$ TVL a year) and loss (\% of TVL a year). $\Delta t$ in seconds; $f$ and $c$ in bps.}
+\label{tab:valid}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Basket & $\Delta t$ & $f$ & $c$ & $T$ sim. & $T$ th. & $L$ sim. & $L$ th.\\
+\midrule
+\csname @@input\endcsname tab_valid.tex 
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Gated vaults.} Table~\ref{tab:gatevalid} checks Proposition~\ref{prop:gate}. Simulated turnover is within 2.3\% of $K/(\delta+\din)$ in all fourteen configurations, for two assets and for the basket, with $K$ computed independently from the drift covariance (A11). The spread is the whole cost: the expected tracking term is a gain of 0.0001--0.06\% a year and grows as $\delta^2$, as A12 predicts. Tracking noise for ETH/USDC matches $\sigma\sqrt{\E[x^2]}$ to within 0.07 points.
+
+\begin{table}[t]
+\centering\footnotesize\setlength{\tabcolsep}{2.5pt}
+\caption{Gated vaults with $s=10$\bps: turnover against $K/(\delta+\din)$, spread cost, rebalances a year and tracking noise (standard deviation of $\ln V/V_{\mathrm{CRP}}$ after one year; theory in brackets). $\delta$ in \%; 400 (ETH) and 240 (core) paths.}
+\label{tab:gatevalid}
+\begin{tabular}{lrcrrrrr}
+\toprule
+& $\delta$ & $\din$ & $T$ sim. & $T$ th. & Cost (\%) & Reb./yr & Noise (\%)\\
+\midrule
+\csname @@input\endcsname tab_gate.tex 
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{What the validation does not show.} It shows that the formulas describe the model. Whether the model describes markets is the subject of the next section.
